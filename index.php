@@ -41,10 +41,22 @@ $_SESSION['foo'] += 10;
 echo $_SESSION['foo'];
 
 
+$mongo_usr = '';
+if ($config->mongodb->username) {
+  $mongo_usr .= $config->mongodb->username;
+  if ($config->mongodb->password) {
+    $mongo_usr .= ':' . $config->mongodb->password;
+  }
+  $mongo_usr .= '@';
+}
+$mongo_port = $config->mongodb->port ? ':' . $config->mongodb->port : '';
+$mongo_db = $config->mongodb->database ? '/' . $config->mongodb->database : '';
+$mongo_url = 'mongodb://' . $mongo_usr . $config->mongodb->host . $mongo_port . $mongo_db;
 
-$con = new MongoClient('mongodb://' . $config->mongodb->host ); //. ':' .  ($config->mongodb->port ?: '27017'));
+$con = new MongoClient($mongo_url);
 
-$db = $con->test_db;
+$db_name = $config->mongodb->database;
+$db = $con->{$db_name};
 
 $foo = $db->my_collection->insert([
   'title' => 'test',
@@ -52,6 +64,7 @@ $foo = $db->my_collection->insert([
 ]);
 
 $result = $db->my_collection->find();
+
 
 echo '<pre>Count: ' . $db->my_collection->count() ."\n";
 echo 'Matches:';
